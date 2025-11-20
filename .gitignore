@@ -1,0 +1,72 @@
+###############################
+# Global OS & Editor Files
+###############################
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.tmp
+
+###############################
+# Frontend (React + Vite)
+###############################
+# Node modules
+frontend/prepee-fe/node_modules/
+
+# Vite build output
+frontend/prepee-fe/dist/
+
+# Local env files
+frontend/prepee-fe/.env
+frontend/prepee-fe/.env.*.local
+
+# Logs
+frontend/prepee-fe/npm-debug.log*
+frontend/prepee-fe/yarn-debug.log*
+frontend/prepee-fe/yarn-error.log*
+frontend/prepee-fe/pnpm-debug.log*
+
+# Vite cache
+frontend/prepee-fe/.vite/
+
+###############################
+# Backend (Django)
+###############################
+# Python venv
+backend/venv/
+
+# Python cache
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/**/*.pyd
+
+# Django specific
+backend/prepee-be/db.sqlite3
+backend/prepee-be/staticfiles/
+backend/prepee-be/media/
+
+# Env files
+backend/prepee-be/.env
+backend/.env
+
+###############################
+# Python general ignore
+###############################
+*.egg-info/
+*.egg
+*.pyd
+*.pyo
+*.pyc
+*.pdb
+*.sqlite3
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+###############################
+# Miscellaneous
+###############################
+# Backup files
+*~
