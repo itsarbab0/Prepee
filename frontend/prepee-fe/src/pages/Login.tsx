@@ -1,15 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import './Auth.css';
 
-interface LoginProps {
-  onSwitchToSignup: () => void;
-  onLogin: (email: string, password: string) => void;
-}
-
-export default function Login({ onSwitchToSignup, onLogin }: LoginProps) {
+export default function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
@@ -39,10 +36,57 @@ export default function Login({ onSwitchToSignup, onLogin }: LoginProps) {
     }
 
     setIsLoading(true);
+    setErrors({}); // Clear any previous errors
+
     try {
-      await onLogin(email, password);
+      const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store the authentication token (adjust based on your API response)
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
+        // Or if your API returns access and refresh tokens:
+        // localStorage.setItem('accessToken', data.access);
+        // localStorage.setItem('refreshToken', data.refresh);
+
+        // Store user data if needed
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+
+        // Navigate to home page
+        navigate('/');
+      } else {
+        // Handle error responses
+        if (data.email) {
+          setErrors({ email: data.email[0] });
+        } else if (data.password) {
+          setErrors({ password: data.password[0] });
+        } else if (data.detail) {
+          setErrors({ general: data.detail });
+        } else if (data.non_field_errors) {
+          setErrors({ general: data.non_field_errors[0] });
+        } else {
+          setErrors({ general: 'Login failed. Please check your credentials.' });
+        }
+      }
     } catch (error) {
       console.error('Login error:', error);
+      setErrors({ 
+        general: 'Unable to connect to the server. Please try again later.' 
+      });
     } finally {
       setIsLoading(false);
     }
@@ -57,6 +101,12 @@ export default function Login({ onSwitchToSignup, onLogin }: LoginProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
+          {errors.general && (
+            <div className="error-message general-error" style={{ marginBottom: '1rem' }}>
+              {errors.general}
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="login-email" className="form-label">
               Email Address
@@ -111,7 +161,7 @@ export default function Login({ onSwitchToSignup, onLogin }: LoginProps) {
             Don't have an account?{' '}
             <button
               type="button"
-              onClick={onSwitchToSignup}
+              onClick={() => navigate('/signup')}
               className="auth-link-button"
             >
               Sign Up
@@ -122,4 +172,3 @@ export default function Login({ onSwitchToSignup, onLogin }: LoginProps) {
     </div>
   );
 }
-

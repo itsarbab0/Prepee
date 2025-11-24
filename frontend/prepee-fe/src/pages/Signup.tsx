@@ -1,12 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import './Auth.css';
 
-interface SignupProps {
-  onSwitchToLogin: () => void;
-  onSignup: (name: string, email: string, password: string) => void;
-}
-
-export default function Signup({ onSwitchToLogin, onSignup }: SignupProps) {
+export default function Signup() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,6 +13,7 @@ export default function Signup({ onSwitchToLogin, onSignup }: SignupProps) {
     email?: string;
     password?: string;
     confirmPassword?: string;
+    general?: string;
   }>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -63,10 +61,89 @@ export default function Signup({ onSwitchToLogin, onSignup }: SignupProps) {
     }
 
     setIsLoading(true);
+    setErrors({}); // Clear any previous errors
+
     try {
-      await onSignup(name, email, password);
+      const response = await fetch('http://127.0.0.1:8000/api/auth/signup/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: email, // Using email as username, or you can create a separate username field
+          email: email,
+          password: password,
+          password2: confirmPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Optional: Store the token if the API returns one immediately after signup
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
+        // Or if your API returns access and refresh tokens:
+        // localStorage.setItem('accessToken', data.access);
+        // localStorage.setItem('refreshToken', data.refresh);
+
+        // Store user data if needed
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+
+        // Navigate to login page or home page based on your flow
+        // If API returns token, go to home:
+        if (data.token) {
+          navigate('/');
+        } else {
+          // Otherwise, go to login:
+          navigate('/login');
+        }
+      } else {
+        // Handle error responses from Django REST Framework
+        const newErrors: {
+          name?: string;
+          email?: string;
+          password?: string;
+          confirmPassword?: string;
+          general?: string;
+        } = {};
+
+        if (data.username) {
+          newErrors.name = Array.isArray(data.username) ? data.username[0] : data.username;
+        }
+        if (data.email) {
+          newErrors.email = Array.isArray(data.email) ? data.email[0] : data.email;
+        }
+        if (data.password) {
+          newErrors.password = Array.isArray(data.password) ? data.password[0] : data.password;
+        }
+        if (data.password2) {
+          newErrors.confirmPassword = Array.isArray(data.password2) ? data.password2[0] : data.password2;
+        }
+        if (data.detail) {
+          newErrors.general = data.detail;
+        }
+        if (data.non_field_errors) {
+          newErrors.general = Array.isArray(data.non_field_errors) 
+            ? data.non_field_errors[0] 
+            : data.non_field_errors;
+        }
+
+        // If no specific errors, show generic message
+        if (Object.keys(newErrors).length === 0) {
+          newErrors.general = 'Signup failed. Please try again.';
+        }
+
+        setErrors(newErrors);
+      }
     } catch (error) {
       console.error('Signup error:', error);
+      setErrors({ 
+        general: 'Unable to connect to the server. Please try again later.' 
+      });
     } finally {
       setIsLoading(false);
     }
@@ -81,6 +158,12 @@ export default function Signup({ onSwitchToLogin, onSignup }: SignupProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
+          {errors.general && (
+            <div className="error-message general-error" style={{ marginBottom: '1rem' }}>
+              {errors.general}
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="signup-name" className="form-label">
               Full Name
@@ -168,7 +251,7 @@ export default function Signup({ onSwitchToLogin, onSignup }: SignupProps) {
             Already have an account?{' '}
             <button
               type="button"
-              onClick={onSwitchToLogin}
+              onClick={() => navigate('/login')}
               className="auth-link-button"
             >
               Sign In
@@ -179,4 +262,3 @@ export default function Signup({ onSwitchToLogin, onSignup }: SignupProps) {
     </div>
   );
 }
-

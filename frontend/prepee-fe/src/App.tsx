@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import './App.css';
 
 const quizCategories = [
@@ -8,12 +9,15 @@ const quizCategories = [
   { title: 'English', icon: '📚' },
   { title: 'Chemistry', icon: '⚗️' },
   { title: 'Physics', icon: '🔭' },
+  { title: 'ECAT', icon: '⚙️' },
+  { title: 'MCAT', icon: '🏥' },
 ] as const;
 
 const timeControls = ['5 min', '10 min', '15 min', 'ANY'] as const;
 
 function HomePage() {
-  const [selectedCategory, setSelectedCategory] = useState(quizCategories[0].title);
+  const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState<(typeof quizCategories)[number]['title']>(quizCategories[0].title);
   const [selectedTime, setSelectedTime] = useState<(typeof timeControls)[number]>('10 min');
 
   return (
@@ -27,20 +31,35 @@ function HomePage() {
             PrePee Quiz
           </div>
           <nav className="hidden items-center gap-6 text-sm font-medium text-slate-200 md:flex">
-            <a className="transition hover:text-white" href="#">
+            <button 
+              onClick={() => navigate('/')}
+              className="transition hover:text-white"
+            >
               Home
-            </a>
-            <a className="transition hover:text-white" href="#">
+            </button>
+            <button 
+              onClick={() => navigate('/leaderboard')}
+              className="transition hover:text-white"
+            >
               Leaderboard
-            </a>
-            <a className="transition hover:text-white" href="#">
+            </button>
+            <button 
+              onClick={() => navigate('/about')}
+              className="transition hover:text-white"
+            >
               About
-            </a>
+            </button>
             <div className="flex items-center gap-2">
-              <button className="rounded-full border border-white/30 px-4 py-2 text-xs uppercase tracking-wide text-slate-100 transition hover:border-white hover:text-white">
+              <button 
+                onClick={() => navigate('/login')}
+                className="rounded-full border border-white/30 px-4 py-2 text-xs uppercase tracking-wide text-slate-100 transition hover:border-white hover:text-white"
+              >
                 Login
               </button>
-              <button className="rounded-full bg-indigo-500 px-4 py-2 text-xs uppercase tracking-wide text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-400">
+              <button 
+                onClick={() => navigate('/signup')}
+                className="rounded-full bg-indigo-500 px-4 py-2 text-xs uppercase tracking-wide text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-400"
+              >
                 Signup
               </button>
             </div>

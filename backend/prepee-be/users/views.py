@@ -3,7 +3,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -19,7 +19,10 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
 class LoginView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+
     def post(self, request):
+        print(request.data)
         email = request.data.get('email')
         password = request.data.get('password')
 
